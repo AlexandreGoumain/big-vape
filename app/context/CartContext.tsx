@@ -5,6 +5,8 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 export interface CartItem {
   id: number;
   productId: number;
+  variantId?: number;
+  variantName?: string;
   title: string;
   price: number;
   image?: string;
@@ -14,8 +16,8 @@ export interface CartItem {
 interface CartContextType {
   items: CartItem[];
   addItem: (item: Omit<CartItem, "id" | "quantity">) => void;
-  removeItem: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
+  removeItem: (id: number) => void;
+  updateQuantity: (id: number, quantity: number) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
@@ -45,12 +47,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addItem = (item: Omit<CartItem, "id" | "quantity">) => {
     setItems((prevItems) => {
-      const existingItem = prevItems.find((i) => i.productId === item.productId);
+      // Trouver un item existant avec le même produit ET la même variante
+      const existingItem = prevItems.find(
+        (i) =>
+          i.productId === item.productId &&
+          i.variantId === item.variantId
+      );
 
       if (existingItem) {
-        // Si le produit existe déjà, augmenter la quantité
+        // Si le produit avec cette variante existe déjà, augmenter la quantité
         return prevItems.map((i) =>
-          i.productId === item.productId
+          i.id === existingItem.id
             ? { ...i, quantity: i.quantity + 1 }
             : i
         );
@@ -58,7 +65,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         // Sinon, ajouter un nouvel item
         const newItem: CartItem = {
           ...item,
-          id: Date.now(), // ID temporaire
+          id: Date.now() + Math.random(), // ID temporaire unique
           quantity: 1,
         };
         return [...prevItems, newItem];
@@ -66,19 +73,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const removeItem = (productId: number) => {
-    setItems((prevItems) => prevItems.filter((i) => i.productId !== productId));
+  const removeItem = (id: number) => {
+    setItems((prevItems) => prevItems.filter((i) => i.id !== id));
   };
 
-  const updateQuantity = (productId: number, quantity: number) => {
+  const updateQuantity = (id: number, quantity: number) => {
     if (quantity <= 0) {
-      removeItem(productId);
+      removeItem(id);
       return;
     }
 
     setItems((prevItems) =>
       prevItems.map((i) =>
-        i.productId === productId ? { ...i, quantity } : i
+        i.id === id ? { ...i, quantity } : i
       )
     );
   };

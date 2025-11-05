@@ -4,6 +4,12 @@ export const getProducts = async () => {
   return await prisma.product.findMany({
     include: {
       category: true,
+      variants: {
+        orderBy: [
+          { isDefault: 'desc' },
+          { createdAt: 'asc' }
+        ]
+      }
     },
   });
 };
@@ -13,6 +19,12 @@ export const getProductById = async (id: number) => {
     where: { id },
     include: {
       category: true,
+      variants: {
+        orderBy: [
+          { isDefault: 'desc' },
+          { createdAt: 'asc' }
+        ]
+      }
     },
   });
   return product;

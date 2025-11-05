@@ -82,20 +82,41 @@ model Address {
 }
 
 model Product {
-  id          Int         @id @default(autoincrement())
+  id          Int              @id @default(autoincrement())
   title       String
-  description String?     @db.Text
-  price       Int
-  image       String?     @default("url_default")
-  status      String      @default("draft") // draft, published, archived
-  stock       Int         @default(0)
+  description String?          @db.Text
+  price       Int              // Prix de base (en centimes)
+  image       String?          @default("url_default")
+  status      String           @default("draft") // draft, published, archived
+  stock       Int              @default(0) // Stock global si pas de variantes
   category_id Int
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  category    Category    @relation(fields: [category_id], references: [id])
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  category    Category         @relation(fields: [category_id], references: [id])
   orderItems  OrderItem[]
   cartItems   CartItem[]
+  variants    ProductVariant[] // Relation vers les variantes
   newField    String?
+}
+
+model ProductVariant {
+  id              Int        @id @default(autoincrement())
+  productId       Int
+  sku             String     @unique
+  name            String     // Ex: "Bleu Glacier - 50ml"
+  color           String?    // Ex: "Bleu Glacier", "#0066CC"
+  size            String?    // Ex: "50ml", "100ml"
+  priceAdjustment Int?       // Ajustement du prix (peut être positif ou négatif, en centimes)
+  stock           Int        @default(0)
+  image           String?    // Image spécifique à cette variante
+  isDefault       Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  product         Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems      OrderItem[]
+  cartItems       CartItem[]
+
+  @@index([productId])
 }
 
 model Category {
@@ -122,15 +143,20 @@ model Order {
 }
 
 model OrderItem {
-  id        Int      @id @default(autoincrement())
-  orderId   Int
-  productId Int
-  quantity  Int
-  price     Int      // Prix au moment de l'achat
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id])
+  id          Int             @id @default(autoincrement())
+  orderId     Int
+  productId   Int
+  variantId   Int?            // Optionnel : ID de la variante choisie
+  variantName String?         // Snapshot du nom de la variante au moment de l'achat
+  quantity    Int
+  price       Int             // Prix au moment de l'achat (incluant l'ajustement de variante)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  order       Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product         @relation(fields: [productId], references: [id])
+  variant     ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  @@index([variantId])
 }
 
 model Cart {
@@ -143,14 +169,17 @@ model Cart {
 }
 
 model CartItem {
-  id        Int      @id @default(autoincrement())
+  id        Int             @id @default(autoincrement())
   cartId    Int
   productId Int
-  quantity  Int      @default(1)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id])
+  variantId Int?            // Optionnel : ID de la variante choisie
+  quantity  Int             @default(1)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  cart      Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product         @relation(fields: [productId], references: [id])
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
 
-  @@unique([cartId, productId]) // Un produit ne peut être qu'une fois dans un panier
+  @@unique([cartId, productId, variantId]) // Combinaison produit + variante unique dans le panier
+  @@index([variantId])
 }
