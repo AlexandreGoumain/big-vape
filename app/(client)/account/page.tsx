@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Package, ShoppingBag, Edit, MapPin, Heart } from "lucide-react";
+import { User, Package, ShoppingBag, Edit, MapPin, Heart, Trophy } from "lucide-react";
 import Link from "next/link";
 
 export default function AccountPage() {
@@ -154,6 +154,24 @@ export default function AccountPage() {
                     <CardTitle>Ma wishlist</CardTitle>
                     <CardDescription>
                       Voir mes produits favoris
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+            </Link>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+            <Link href="/account/loyalty">
+              <CardHeader>
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-primary/10 rounded-lg">
+                    <Trophy className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle>Programme de fidélité</CardTitle>
+                    <CardDescription>
+                      Voir mes points et récompenses
                     </CardDescription>
                   </div>
                 </div>

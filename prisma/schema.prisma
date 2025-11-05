@@ -14,27 +14,31 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  firstName     String?
-  lastName      String?
-  email         String         @unique
-  emailVerified DateTime?
-  password      String?
-  birthDate     DateTime?
-  image         String?
-  role          String         @default("user")
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  addressId     Int?
-  address       Address?       @relation("UserDefaultAddress", fields: [addressId], references: [id])
-  orders        Order[]
-  cart          Cart?
-  accounts      Account[]
-  sessions      Session[]
-  userAddresses UserAddress[]
-  reviews       Review[]
-  wishlist      Wishlist[]
-  productViews  ProductView[]
+  id                 String               @id @default(cuid())
+  firstName          String?
+  lastName           String?
+  email              String               @unique
+  emailVerified      DateTime?
+  password           String?
+  birthDate          DateTime?
+  image              String?
+  role               String               @default("user")
+  loyaltyPoints      Int                  @default(0) // Points de fidélité actuels
+  totalPointsEarned  Int                  @default(0) // Total des points gagnés (historique)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  addressId          Int?
+  address            Address?             @relation("UserDefaultAddress", fields: [addressId], references: [id])
+  orders             Order[]
+  cart               Cart?
+  accounts           Account[]
+  sessions           Session[]
+  userAddresses      UserAddress[]
+  reviews            Review[]
+  wishlist           Wishlist[]
+  productViews       ProductView[]
+  loyaltyTransactions LoyaltyTransaction[]
+  userRewards        UserReward[]
 }
 
 model Account {
@@ -223,4 +227,49 @@ model Newsletter {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model LoyaltyTransaction {
+  id          Int      @id @default(autoincrement())
+  userId      String
+  points      Int      // Positif pour gain, négatif pour dépense
+  type        String   // "earned_order", "earned_review", "earned_signup", "redeemed", "expired"
+  description String   @db.Text
+  orderId     Int?     // Si lié à une commande
+  rewardId    Int?     // Si lié à une récompense
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model LoyaltyReward {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String       @db.Text
+  pointsCost  Int          // Coût en points
+  type        String       // "discount_percentage", "discount_fixed", "free_shipping", "free_product"
+  value       Int          // Valeur du discount ou ID du produit
+  isActive    Boolean      @default(true)
+  stock       Int?         // Nombre de récompenses disponibles (null = illimité)
+  validDays   Int          @default(30) // Nombre de jours de validité après récupération
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  userRewards UserReward[]
+}
+
+model UserReward {
+  id        Int           @id @default(autoincrement())
+  userId    String
+  rewardId  Int
+  isUsed    Boolean       @default(false)
+  usedAt    DateTime?
+  expiresAt DateTime      // Date d'expiration
+  createdAt DateTime      @default(now())
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reward    LoyaltyReward @relation(fields: [rewardId], references: [id])
+
+  @@index([userId])
+  @@index([expiresAt])
 }

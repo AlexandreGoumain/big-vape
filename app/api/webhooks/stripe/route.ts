@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import prisma from "@/app/api/prisma/client";
 import { sendOrderConfirmationEmail, sendAdminNewOrderEmail } from "@/lib/email";
+import { awardOrderPoints } from "@/app/services/loyaltyService";
 import Stripe from "stripe";
 
 export async function POST(request: NextRequest) {
@@ -129,6 +130,18 @@ async function handleCheckoutSessionCompleted(
       totalAmount: order.total,
       itemsCount: order.orderItems.length,
     });
+
+    // Attribuer des points de fidélité
+    try {
+      const pointsEarned = await awardOrderPoints(
+        order.userId,
+        order.id,
+        order.total
+      );
+      console.log(`Awarded ${pointsEarned} loyalty points for order ${orderId}`);
+    } catch (error) {
+      console.error("Error awarding loyalty points:", error);
+    }
 
     console.log(`Order ${orderId} marked as paid and emails sent`);
   } catch (error) {

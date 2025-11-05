@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/app/api/prisma/client";
+import { awardReviewPoints } from "@/app/services/loyaltyService";
 
 // GET - Récupérer les avis d'un produit
 export async function GET(
@@ -139,6 +140,13 @@ export async function POST(
         },
       },
     });
+
+    // Attribuer des points de fidélité pour l'avis
+    try {
+      await awardReviewPoints(user.id, productId);
+    } catch (error) {
+      console.error("Error awarding review points:", error);
+    }
 
     return NextResponse.json(review, { status: 201 });
   } catch (error) {
