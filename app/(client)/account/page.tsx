@@ -1,7 +1,7 @@
 "use client";
 
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import { useSession } from "next-auth/react";
+import { Link, button } from "next-auth/react/components";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,7 +15,7 @@ import { User, Package, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 
 export default function AccountPage() {
-  const { user, isAuthenticated, isLoading } = useKindeBrowserClient();
+  const { user, isAuthenticated, isLoading } = useSession();
 
   if (isLoading) {
     return (
@@ -37,7 +37,7 @@ export default function AccountPage() {
           </CardHeader>
           <CardContent className="py-8">
             <Button asChild size="lg">
-              <LoginLink>Se connecter</LoginLink>
+              <Link>Se connecter</Link>
             </Button>
           </CardContent>
         </Card>
@@ -70,7 +70,7 @@ export default function AccountPage() {
               </div>
 
               <Button variant="outline" asChild className="w-full">
-                <LogoutLink>Se déconnecter</LogoutLink>
+                <button>Se déconnecter</button>
               </Button>
             </CardContent>
           </Card>

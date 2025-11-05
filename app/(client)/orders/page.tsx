@@ -1,7 +1,7 @@
 "use client";
 
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import { LoginLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import { useSession } from "next-auth/react";
+import { Link } from "next-auth/react/components";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,7 +17,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function OrdersPage() {
-  const { isAuthenticated, isLoading } = useKindeBrowserClient();
+  const { isAuthenticated, isLoading } = useSession();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -63,7 +63,7 @@ export default function OrdersPage() {
           </CardHeader>
           <CardContent className="py-8">
             <Button asChild size="lg">
-              <LoginLink>Se connecter</LoginLink>
+              <Link>Se connecter</Link>
             </Button>
           </CardContent>
         </Card>

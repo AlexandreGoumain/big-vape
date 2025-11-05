@@ -11,12 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import {
-    LoginLink,
-    LogoutLink,
-    RegisterLink,
-} from "@kinde-oss/kinde-auth-nextjs/components";
+import { signOut, useSession } from "next-auth/react";
 import { CircleUser, MenuIcon, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -47,8 +42,9 @@ const links = [
 
 export default function Navigation() {
     const pathname = usePathname();
-    const { isAuthenticated } = useKindeBrowserClient();
+    const { data: session, status } = useSession();
     const { totalItems } = useCart();
+    const isAuthenticated = status === "authenticated";
 
     return (
         <>
@@ -133,16 +129,22 @@ export default function Navigation() {
                         {isAuthenticated ? (
                             <>
                                 <DropdownMenuItem asChild>
-                                    <LogoutLink>Se déconnecter</LogoutLink>
+                                    <Link href="/account">Mon compte</Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => signOut({ callbackUrl: "/" })}
+                                    className="cursor-pointer"
+                                >
+                                    Se déconnecter
                                 </DropdownMenuItem>
                             </>
                         ) : (
                             <>
                                 <DropdownMenuItem asChild>
-                                    <LoginLink>Se connecter</LoginLink>
+                                    <Link href="/login">Se connecter</Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
-                                    <RegisterLink>S&apos;inscrire</RegisterLink>
+                                    <Link href="/register">S&apos;inscrire</Link>
                                 </DropdownMenuItem>
                             </>
                         )}
