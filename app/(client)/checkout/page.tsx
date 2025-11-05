@@ -94,37 +94,52 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/orders", {
+      // Créer d'abord l'adresse de livraison
+      const addressResponse = await fetch("/api/addresses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(shippingAddress),
+      });
+
+      if (!addressResponse.ok) {
+        throw new Error("Failed to create shipping address");
+      }
+
+      const address = await addressResponse.json();
+
+      // Créer la session de paiement Stripe
+      const checkoutResponse = await fetch("/api/checkout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          items: items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-          shippingAddress,
-          paymentMethod,
+          shippingAddressId: address.id,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to create order");
+      if (!checkoutResponse.ok) {
+        const error = await checkoutResponse.json();
+        throw new Error(error.error || "Failed to create checkout session");
       }
 
-      const order = await response.json();
+      const { url } = await checkoutResponse.json();
 
-      // Vider le panier
-      clearCart();
-
-      // Rediriger vers la page de confirmation
-      router.push(`/order-confirmation/${order.id}`);
+      // Rediriger vers Stripe Checkout
+      if (url) {
+        window.location.href = url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
     } catch (error) {
-      console.error("Error creating order:", error);
-      alert("Erreur lors de la création de la commande");
-    } finally {
+      console.error("Error creating checkout session:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Erreur lors de la création de la session de paiement"
+      );
       setLoading(false);
     }
   };
@@ -266,7 +281,7 @@ export default function CheckoutPage() {
               </CardContent>
               <CardFooter>
                 <Button type="submit" size="lg" className="w-full" disabled={loading}>
-                  {loading ? "Traitement..." : "Confirmer la commande"}
+                  {loading ? "Redirection vers le paiement..." : "Procéder au paiement"}
                 </Button>
               </CardFooter>
             </Card>
