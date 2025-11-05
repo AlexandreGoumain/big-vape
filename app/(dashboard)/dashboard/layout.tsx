@@ -11,8 +11,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { CircleUser, MenuIcon } from "lucide-react";
 import { Inter } from "next/font/google";
 import { redirect } from "next/navigation";
-import DashboardNavigation from "../../components/dashboard/DashboardNavigation";
-import "../globals.css";
+import DashboardNavigation from "@/app/components/dashboard/DashboardNavigation";
+import "@/app/globals.css";
 import { auth, signOut } from "@/auth";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -24,7 +24,7 @@ export default async function DashboardLayout({
 }>) {
     const session = await auth();
 
-    if (!session?.user || session.user.email !== "alexandre26goumain@gmail.com") {
+    if (!session?.user || session.user.role !== "admin") {
         redirect("/");
     }
 

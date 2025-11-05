@@ -6,7 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/app/context/CartContext";
 import { ShoppingCart, Check, Minus, Plus } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import ProductReviews from "@/app/components/product/ProductReviews";
+import WishlistButton from "@/app/components/product/WishlistButton";
+import RecommendedProducts from "@/app/components/product/RecommendedProducts";
 
 interface Product {
   id: number;
@@ -28,6 +31,21 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   const [addedToCart, setAddedToCart] = useState(false);
 
   const isInCart = items.some((item) => item.productId === product.id);
+
+  // Enregistrer la vue du produit
+  useEffect(() => {
+    const recordView = async () => {
+      try {
+        await fetch(`/api/products/${product.id}/view`, {
+          method: "POST",
+        });
+      } catch (error) {
+        console.error("Error recording view:", error);
+      }
+    };
+
+    recordView();
+  }, [product.id]);
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
@@ -84,7 +102,14 @@ export default function ProductDetailClient({ product }: { product: Product }) {
             <Badge variant="outline" className="mb-2">
               {product.category.name}
             </Badge>
-            <h1 className="text-3xl font-bold">{product.title}</h1>
+            <div className="flex items-start justify-between gap-4">
+              <h1 className="text-3xl font-bold flex-1">{product.title}</h1>
+              <WishlistButton
+                productId={product.id}
+                variant="default"
+                size="default"
+              />
+            </div>
           </div>
 
           <div className="text-3xl font-bold text-primary">
@@ -181,6 +206,14 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           </Button>
         </div>
       </div>
+
+      {/* Avis clients */}
+      <div className="mt-12">
+        <ProductReviews productId={product.id} />
+      </div>
+
+      {/* Produits recommandés */}
+      <RecommendedProducts productId={product.id} />
     </div>
   );
 }

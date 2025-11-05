@@ -1,8 +1,8 @@
-import CardCategory from "../components/storeFront/CardCategory";
+import CardCategory from "@/app/components/storeFront/CardCategory";
 import {
   getCategories,
   getCategoryNameByProductCategoryId,
-} from "../services/categoryService"; // Import the function
+} from "@/app/services/categoryService"; // Import the function
 
 // MAPPING SUR TOUS LES PRODUITS
 const categoryClient = async () => {

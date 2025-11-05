@@ -14,23 +14,31 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  firstName     String?
-  lastName      String?
-  email         String    @unique
-  emailVerified DateTime?
-  password      String?
-  birthDate     DateTime?
-  image         String?
-  role          String    @default("user")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  addressId     Int?
-  address       Address?  @relation(fields: [addressId], references: [id])
-  orders        Order[]
-  cart          Cart?
-  accounts      Account[]
-  sessions      Session[]
+  id                 String               @id @default(cuid())
+  firstName          String?
+  lastName           String?
+  email              String               @unique
+  emailVerified      DateTime?
+  password           String?
+  birthDate          DateTime?
+  image              String?
+  role               String               @default("user")
+  loyaltyPoints      Int                  @default(0) // Points de fidélité actuels
+  totalPointsEarned  Int                  @default(0) // Total des points gagnés (historique)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  addressId          Int?
+  address            Address?             @relation("UserDefaultAddress", fields: [addressId], references: [id])
+  orders             Order[]
+  cart               Cart?
+  accounts           Account[]
+  sessions           Session[]
+  userAddresses      UserAddress[]
+  reviews            Review[]
+  wishlist           Wishlist[]
+  productViews       ProductView[]
+  loyaltyTransactions LoyaltyTransaction[]
+  userRewards        UserReward[]
 }
 
 model Account {
@@ -69,32 +77,36 @@ model VerificationToken {
 }
 
 model Address {
-  id        Int      @id @default(autoincrement())
-  street    String
-  city      String
-  state     String
-  zipCode   String
-  country   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  users     User[]
-  orders    Order[]
+  id            Int           @id @default(autoincrement())
+  street        String
+  city          String
+  state         String
+  zipCode       String
+  country       String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  users         User[]        @relation("UserDefaultAddress")
+  orders        Order[]
+  userAddresses UserAddress[]
 }
 
 model Product {
-  id          Int         @id @default(autoincrement())
+  id          Int           @id @default(autoincrement())
   title       String
-  description String?     @db.Text
+  description String?       @db.Text
   price       Int
-  image       String?     @default("url_default")
-  status      String      @default("draft") // draft, published, archived
-  stock       Int         @default(0)
+  image       String?       @default("url_default")
+  status      String        @default("draft") // draft, published, archived
+  stock       Int           @default(0)
   category_id Int
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  category    Category    @relation(fields: [category_id], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  category    Category      @relation(fields: [category_id], references: [id])
   orderItems  OrderItem[]
   cartItems   CartItem[]
+  reviews     Review[]
+  wishlists   Wishlist[]
+  views       ProductView[]
   newField    String?
 }
 
@@ -108,17 +120,20 @@ model Category {
 }
 
 model Order {
-  id                 Int         @id @default(autoincrement())
-  userId             String
-  status             String      @default("pending") // pending, processing, shipped, delivered, cancelled
-  total              Int
-  shippingAddressId  Int
-  paymentMethod      String?
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-  user               User        @relation(fields: [userId], references: [id])
-  shippingAddress    Address     @relation(fields: [shippingAddressId], references: [id])
-  orderItems         OrderItem[]
+  id                    Int         @id @default(autoincrement())
+  userId                String
+  status                String      @default("pending") // pending, processing, shipped, delivered, cancelled
+  total                 Int
+  shippingAddressId     Int
+  paymentMethod         String?
+  paymentStatus         String      @default("unpaid") // unpaid, paid, refunded, failed
+  stripeSessionId       String?     @unique
+  stripePaymentIntentId String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  user                  User        @relation(fields: [userId], references: [id])
+  shippingAddress       Address     @relation(fields: [shippingAddressId], references: [id])
+  orderItems            OrderItem[]
 }
 
 model OrderItem {
@@ -153,4 +168,108 @@ model CartItem {
   product   Product  @relation(fields: [productId], references: [id])
 
   @@unique([cartId, productId]) // Un produit ne peut être qu'une fois dans un panier
+}
+
+model UserAddress {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  addressId Int
+  label     String?  // "Domicile", "Travail", "Autre"
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address   Address  @relation(fields: [addressId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, addressId]) // Un utilisateur ne peut pas avoir la même adresse deux fois
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  productId Int
+  rating    Int      // Note de 1 à 5
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId]) // Un utilisateur ne peut laisser qu'un seul avis par produit
+}
+
+model Wishlist {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  productId Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId]) // Un utilisateur ne peut ajouter un produit qu'une seule fois à sa wishlist
+}
+
+model ProductView {
+  id        Int      @id @default(autoincrement())
+  userId    String?  // Nullable pour les visiteurs non connectés
+  productId Int
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId]) // Index pour les requêtes de popularité
+  @@index([userId]) // Index pour les recommandations personnalisées
+}
+
+model Newsletter {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LoyaltyTransaction {
+  id          Int      @id @default(autoincrement())
+  userId      String
+  points      Int      // Positif pour gain, négatif pour dépense
+  type        String   // "earned_order", "earned_review", "earned_signup", "redeemed", "expired"
+  description String   @db.Text
+  orderId     Int?     // Si lié à une commande
+  rewardId    Int?     // Si lié à une récompense
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model LoyaltyReward {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String       @db.Text
+  pointsCost  Int          // Coût en points
+  type        String       // "discount_percentage", "discount_fixed", "free_shipping", "free_product"
+  value       Int          // Valeur du discount ou ID du produit
+  isActive    Boolean      @default(true)
+  stock       Int?         // Nombre de récompenses disponibles (null = illimité)
+  validDays   Int          @default(30) // Nombre de jours de validité après récupération
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  userRewards UserReward[]
+}
+
+model UserReward {
+  id        Int           @id @default(autoincrement())
+  userId    String
+  rewardId  Int
+  isUsed    Boolean       @default(false)
+  usedAt    DateTime?
+  expiresAt DateTime      // Date d'expiration
+  createdAt DateTime      @default(now())
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reward    LoyaltyReward @relation(fields: [rewardId], references: [id])
+
+  @@index([userId])
+  @@index([expiresAt])
 }

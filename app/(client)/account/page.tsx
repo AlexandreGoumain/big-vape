@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Package, ShoppingBag } from "lucide-react";
+import { User, Package, ShoppingBag, Edit, MapPin, Heart, Trophy } from "lucide-react";
 import Link from "next/link";
 
 export default function AccountPage() {
@@ -71,9 +71,18 @@ export default function AccountPage() {
                 <p className="text-sm text-gray-600">{user?.email}</p>
               </div>
 
-              <Button variant="outline" onClick={() => signOut()} className="w-full">
-                Se déconnecter
-              </Button>
+              <div className="space-y-2">
+                <Button asChild variant="default" className="w-full">
+                  <Link href="/account/edit">
+                    <Edit className="w-4 h-4 mr-2" />
+                    Modifier mon profil
+                  </Link>
+                </Button>
+
+                <Button variant="outline" onClick={() => signOut()} className="w-full">
+                  Se déconnecter
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -81,7 +90,7 @@ export default function AccountPage() {
         {/* Actions rapides */}
         <div className="md:col-span-2 space-y-4">
           <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-            <Link href="/orders">
+            <Link href="/account/orders">
               <CardHeader>
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-primary/10 rounded-lg">
@@ -91,6 +100,24 @@ export default function AccountPage() {
                     <CardTitle>Mes commandes</CardTitle>
                     <CardDescription>
                       Voir l&apos;historique de vos commandes
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+            </Link>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+            <Link href="/account/addresses">
+              <CardHeader>
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-primary/10 rounded-lg">
+                    <MapPin className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle>Mes adresses</CardTitle>
+                    <CardDescription>
+                      Gérer mon carnet d&apos;adresses
                     </CardDescription>
                   </div>
                 </div>
@@ -109,6 +136,42 @@ export default function AccountPage() {
                     <CardTitle>Mon panier</CardTitle>
                     <CardDescription>
                       Voir les articles dans votre panier
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+            </Link>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+            <Link href="/wishlist">
+              <CardHeader>
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-primary/10 rounded-lg">
+                    <Heart className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle>Ma wishlist</CardTitle>
+                    <CardDescription>
+                      Voir mes produits favoris
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+            </Link>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+            <Link href="/account/loyalty">
+              <CardHeader>
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-primary/10 rounded-lg">
+                    <Trophy className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle>Programme de fidélité</CardTitle>
+                    <CardDescription>
+                      Voir mes points et récompenses
                     </CardDescription>
                   </div>
                 </div>

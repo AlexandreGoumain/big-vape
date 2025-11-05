@@ -15,6 +15,7 @@ import { ShoppingCart, Check } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import WishlistButton from "@/app/components/product/WishlistButton";
 
 interface CardProductProps {
   id: number;
@@ -50,7 +51,12 @@ export default function CardProduct({
     <div className="flex justify-center">
       <Card className="max-w-80">
         <CardHeader>
-          <Image src={image} alt={title} width={200} height={200} />
+          <div className="relative">
+            <Image src={image} alt={title} width={200} height={200} />
+            <div className="absolute top-2 right-2">
+              <WishlistButton productId={id} />
+            </div>
+          </div>
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent>
