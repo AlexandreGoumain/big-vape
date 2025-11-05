@@ -1,6 +1,5 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 
 const f = createUploadthing();
 
@@ -8,9 +7,9 @@ export const ourFileRouter = {
   productImage: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
     .middleware(async () => {
       // Vérifier que l'utilisateur est authentifié et est admin
-      const session = await getServerSession(authOptions);
+      const session = await auth();
 
-      if (!session || session.user?.role !== "ADMIN") {
+      if (!session || session.user?.role !== "admin") {
         throw new Error("Unauthorized");
       }
 

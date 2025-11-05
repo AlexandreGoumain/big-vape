@@ -14,23 +14,26 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String         @id @default(cuid())
   firstName     String?
   lastName      String?
-  email         String    @unique
+  email         String         @unique
   emailVerified DateTime?
   password      String?
   birthDate     DateTime?
   image         String?
-  role          String    @default("user")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  role          String         @default("user")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   addressId     Int?
-  address       Address?  @relation(fields: [addressId], references: [id])
+  address       Address?       @relation("UserDefaultAddress", fields: [addressId], references: [id])
   orders        Order[]
   cart          Cart?
   accounts      Account[]
   sessions      Session[]
+  userAddresses UserAddress[]
+  reviews       Review[]
+  wishlist      Wishlist[]
 }
 
 model Account {
@@ -69,16 +72,17 @@ model VerificationToken {
 }
 
 model Address {
-  id        Int      @id @default(autoincrement())
-  street    String
-  city      String
-  state     String
-  zipCode   String
-  country   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  users     User[]
-  orders    Order[]
+  id            Int           @id @default(autoincrement())
+  street        String
+  city          String
+  state         String
+  zipCode       String
+  country       String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  users         User[]        @relation("UserDefaultAddress")
+  orders        Order[]
+  userAddresses UserAddress[]
 }
 
 model Product {
@@ -95,6 +99,8 @@ model Product {
   category    Category    @relation(fields: [category_id], references: [id])
   orderItems  OrderItem[]
   cartItems   CartItem[]
+  reviews     Review[]
+  wishlists   Wishlist[]
   newField    String?
 }
 
@@ -156,4 +162,43 @@ model CartItem {
   product   Product  @relation(fields: [productId], references: [id])
 
   @@unique([cartId, productId]) // Un produit ne peut être qu'une fois dans un panier
+}
+
+model UserAddress {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  addressId Int
+  label     String?  // "Domicile", "Travail", "Autre"
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address   Address  @relation(fields: [addressId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, addressId]) // Un utilisateur ne peut pas avoir la même adresse deux fois
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  productId Int
+  rating    Int      // Note de 1 à 5
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId]) // Un utilisateur ne peut laisser qu'un seul avis par produit
+}
+
+model Wishlist {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  productId Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId]) // Un utilisateur ne peut ajouter un produit qu'une seule fois à sa wishlist
 }

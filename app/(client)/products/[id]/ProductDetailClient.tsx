@@ -7,6 +7,8 @@ import { useCart } from "@/app/context/CartContext";
 import { ShoppingCart, Check, Minus, Plus } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import ProductReviews from "@/app/components/product/ProductReviews";
+import WishlistButton from "@/app/components/product/WishlistButton";
 
 interface Product {
   id: number;
@@ -84,7 +86,14 @@ export default function ProductDetailClient({ product }: { product: Product }) {
             <Badge variant="outline" className="mb-2">
               {product.category.name}
             </Badge>
-            <h1 className="text-3xl font-bold">{product.title}</h1>
+            <div className="flex items-start justify-between gap-4">
+              <h1 className="text-3xl font-bold flex-1">{product.title}</h1>
+              <WishlistButton
+                productId={product.id}
+                variant="default"
+                size="default"
+              />
+            </div>
           </div>
 
           <div className="text-3xl font-bold text-primary">
@@ -180,6 +189,11 @@ export default function ProductDetailClient({ product }: { product: Product }) {
             )}
           </Button>
         </div>
+      </div>
+
+      {/* Avis clients */}
+      <div className="mt-12">
+        <ProductReviews productId={product.id} />
       </div>
     </div>
   );

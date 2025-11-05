@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Package, ShoppingBag, Edit } from "lucide-react";
+import { User, Package, ShoppingBag, Edit, MapPin } from "lucide-react";
 import Link from "next/link";
 
 export default function AccountPage() {
@@ -100,6 +100,24 @@ export default function AccountPage() {
                     <CardTitle>Mes commandes</CardTitle>
                     <CardDescription>
                       Voir l&apos;historique de vos commandes
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+            </Link>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+            <Link href="/account/addresses">
+              <CardHeader>
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-primary/10 rounded-lg">
+                    <MapPin className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle>Mes adresses</CardTitle>
+                    <CardDescription>
+                      Gérer mon carnet d&apos;adresses
                     </CardDescription>
                   </div>
                 </div>
