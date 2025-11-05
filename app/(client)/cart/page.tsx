@@ -26,7 +26,7 @@ export default function CartPage() {
           <CardHeader>
             <CardTitle className="text-2xl">Votre panier est vide</CardTitle>
             <CardDescription>
-              Ajoutez des produits à votre panier pour commencer vos achats
+              Ajoutez des produits Ã  votre panier pour commencer vos achats
             </CardDescription>
           </CardHeader>
           <CardContent className="py-8">
@@ -34,7 +34,7 @@ export default function CartPage() {
           </CardContent>
           <CardFooter className="justify-center">
             <Button asChild size="lg">
-              <Link href="/products">Découvrir nos produits</Link>
+              <Link href="/products">DÃ©couvrir nos produits</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -69,14 +69,14 @@ export default function CartPage() {
                     )}
                   </div>
 
-                  {/* Détails */}
+                  {/* DÃ©tails */}
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg">{item.title}</h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      {(item.price / 100).toFixed(2)} ¬ / unité
+                      {(item.price / 100).toFixed(2)} â‚¬ / unitÃ©
                     </p>
 
-                    {/* Contrôles quantité */}
+                    {/* ContrÃ´les quantitÃ© */}
                     <div className="flex items-center gap-3 mt-4">
                       <Button
                         variant="outline"
@@ -118,7 +118,7 @@ export default function CartPage() {
                   {/* Prix total de la ligne */}
                   <div className="text-right">
                     <p className="font-bold text-lg">
-                      {((item.price * item.quantity) / 100).toFixed(2)} ¬
+                      {((item.price * item.quantity) / 100).toFixed(2)} â‚¬
                     </p>
                   </div>
                 </div>
@@ -136,17 +136,17 @@ export default function CartPage() {
           </Button>
         </div>
 
-        {/* Résumé de la commande */}
+        {/* RÃ©sumÃ© de la commande */}
         <div>
           <Card className="sticky top-20">
             <CardHeader>
-              <CardTitle>Résumé</CardTitle>
+              <CardTitle>RÃ©sumÃ©</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Articles ({totalItems})</span>
                 <span className="font-medium">
-                  {(totalPrice / 100).toFixed(2)} ¬
+                  {(totalPrice / 100).toFixed(2)} â‚¬
                 </span>
               </div>
 
@@ -159,7 +159,7 @@ export default function CartPage() {
 
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span>{(totalPrice / 100).toFixed(2)} ¬</span>
+                <span>{(totalPrice / 100).toFixed(2)} â‚¬</span>
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-2">
