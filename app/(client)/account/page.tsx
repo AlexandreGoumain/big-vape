@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Package, ShoppingBag, Edit, MapPin } from "lucide-react";
+import { User, Package, ShoppingBag, Edit, MapPin, Heart } from "lucide-react";
 import Link from "next/link";
 
 export default function AccountPage() {
@@ -90,7 +90,7 @@ export default function AccountPage() {
         {/* Actions rapides */}
         <div className="md:col-span-2 space-y-4">
           <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-            <Link href="/orders">
+            <Link href="/account/orders">
               <CardHeader>
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-primary/10 rounded-lg">
@@ -136,6 +136,24 @@ export default function AccountPage() {
                     <CardTitle>Mon panier</CardTitle>
                     <CardDescription>
                       Voir les articles dans votre panier
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+            </Link>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+            <Link href="/wishlist">
+              <CardHeader>
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-primary/10 rounded-lg">
+                    <Heart className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle>Ma wishlist</CardTitle>
+                    <CardDescription>
+                      Voir mes produits favoris
                     </CardDescription>
                   </div>
                 </div>

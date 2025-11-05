@@ -34,6 +34,7 @@ model User {
   userAddresses UserAddress[]
   reviews       Review[]
   wishlist      Wishlist[]
+  productViews  ProductView[]
 }
 
 model Account {
@@ -86,21 +87,22 @@ model Address {
 }
 
 model Product {
-  id          Int         @id @default(autoincrement())
+  id          Int           @id @default(autoincrement())
   title       String
-  description String?     @db.Text
+  description String?       @db.Text
   price       Int
-  image       String?     @default("url_default")
-  status      String      @default("draft") // draft, published, archived
-  stock       Int         @default(0)
+  image       String?       @default("url_default")
+  status      String        @default("draft") // draft, published, archived
+  stock       Int           @default(0)
   category_id Int
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  category    Category    @relation(fields: [category_id], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  category    Category      @relation(fields: [category_id], references: [id])
   orderItems  OrderItem[]
   cartItems   CartItem[]
   reviews     Review[]
   wishlists   Wishlist[]
+  views       ProductView[]
   newField    String?
 }
 
@@ -201,4 +203,24 @@ model Wishlist {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId]) // Un utilisateur ne peut ajouter un produit qu'une seule fois à sa wishlist
+}
+
+model ProductView {
+  id        Int      @id @default(autoincrement())
+  userId    String?  // Nullable pour les visiteurs non connectés
+  productId Int
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId]) // Index pour les requêtes de popularité
+  @@index([userId]) // Index pour les recommandations personnalisées
+}
+
+model Newsletter {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
