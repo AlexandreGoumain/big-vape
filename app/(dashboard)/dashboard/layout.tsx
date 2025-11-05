@@ -1,5 +1,3 @@
-"use client"; // Add this line at the top
-
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -10,39 +8,24 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { CircleUser, MenuIcon } from "lucide-react";
 import { Inter } from "next/font/google";
 import { redirect } from "next/navigation";
-import { useEffect, useState } from "react";
 import DashboardNavigation from "../../components/dashboard/DashboardNavigation";
 import "../globals.css";
+import { auth, signOut } from "@/auth";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const { getUser } = getKindeServerSession();
-    const [user, setUser] = useState(null);
+    const session = await auth();
 
-    useEffect(() => {
-        async function fetchUser() {
-            const user = await getUser();
-            if (!user || user.email !== "alexandre26goumain@gmail.com") {
-                redirect("/");
-            } else {
-                setUser(user as any);
-            }
-        }
-        fetchUser();
-    }, [getUser]);
-
-    if (!user) {
-        return null; // Ou un indicateur de chargement
+    if (!session?.user || session.user.email !== "alexandre26goumain@gmail.com") {
+        redirect("/");
     }
 
     return (
@@ -87,7 +70,16 @@ export default function DashboardLayout({
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem asChild>
-                                        <LogoutLink>Se déconnecter</LogoutLink>
+                                        <form
+                                            action={async () => {
+                                                "use server";
+                                                await signOut();
+                                            }}
+                                        >
+                                            <button type="submit" className="w-full text-left">
+                                                Se déconnecter
+                                            </button>
+                                        </form>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>

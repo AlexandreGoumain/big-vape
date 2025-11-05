@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/api/prisma/client";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { auth } from "@/auth";
 
 // GET /api/orders - Récupérer toutes les commandes de l'utilisateur
 export async function GET() {
   try {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    const session = await auth();
 
-    if (!user || !user.email) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Trouver l'utilisateur dans la base de données
     const dbUser = await prisma.user.findUnique({
-      where: { email: user.email },
+      where: { email: session.user.email },
     });
 
     if (!dbUser) {
@@ -50,10 +49,9 @@ export async function GET() {
 // POST /api/orders - Créer une nouvelle commande
 export async function POST(request: NextRequest) {
   try {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    const session = await auth();
 
-    if (!user || !user.email) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -75,23 +73,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Trouver ou créer l'utilisateur dans la base de données
-    let dbUser = await prisma.user.findUnique({
-      where: { email: user.email },
+    // Trouver l'utilisateur dans la base de données (il doit exister car il est authentifié)
+    const dbUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
     });
 
     if (!dbUser) {
-      // Créer l'utilisateur s'il n'existe pas
-      dbUser = await prisma.user.create({
-        data: {
-          email: user.email,
-          firstName: user.given_name || "User",
-          lastName: user.family_name || "",
-          password: "", // Pas de mot de passe pour les utilisateurs Kinde
-          birthDate: new Date(),
-          role: "user",
-        },
-      });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Créer l'adresse de livraison

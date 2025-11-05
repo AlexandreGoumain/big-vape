@@ -1,7 +1,6 @@
 "use client";
 
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,7 +14,9 @@ import { User, Package, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 
 export default function AccountPage() {
-  const { user, isAuthenticated, isLoading } = useKindeBrowserClient();
+  const { data: session, status } = useSession();
+  const isLoading = status === "loading";
+  const isAuthenticated = status === "authenticated";
 
   if (isLoading) {
     return (
@@ -37,7 +38,7 @@ export default function AccountPage() {
           </CardHeader>
           <CardContent className="py-8">
             <Button asChild size="lg">
-              <LoginLink>Se connecter</LoginLink>
+              <Link href="/login">Se connecter</Link>
             </Button>
           </CardContent>
         </Card>
@@ -45,7 +46,8 @@ export default function AccountPage() {
     );
   }
 
-  const initials = `${user?.given_name?.[0] || ""}${user?.family_name?.[0] || ""}`.toUpperCase() || "U";
+  const user = session?.user;
+  const initials = user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U";
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -64,13 +66,13 @@ export default function AccountPage() {
                   <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
                 </Avatar>
                 <h2 className="text-xl font-semibold">
-                  {user?.given_name} {user?.family_name}
+                  {user?.name || "Utilisateur"}
                 </h2>
                 <p className="text-sm text-gray-600">{user?.email}</p>
               </div>
 
-              <Button variant="outline" asChild className="w-full">
-                <LogoutLink>Se déconnecter</LogoutLink>
+              <Button variant="outline" onClick={() => signOut()} className="w-full">
+                Se déconnecter
               </Button>
             </CardContent>
           </Card>
@@ -124,12 +126,8 @@ export default function AccountPage() {
                 <span className="font-medium">{user?.email}</span>
               </div>
               <div className="flex justify-between">
-                <span>Prénom:</span>
-                <span className="font-medium">{user?.given_name || "N/A"}</span>
-              </div>
-              <div className="flex justify-between">
                 <span>Nom:</span>
-                <span className="font-medium">{user?.family_name || "N/A"}</span>
+                <span className="font-medium">{user?.name || "N/A"}</span>
               </div>
             </CardContent>
           </Card>
