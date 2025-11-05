@@ -1,26 +1,57 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "@/app/api/prisma/client";
 
 export const getProducts = async () => {
-  try {
-    return await prisma.product.findMany();
-  } finally {
-    await prisma.$disconnect(); // Ferme la connexion après utilisation
-  }
+  return await prisma.product.findMany({
+    include: {
+      category: true,
+    },
+  });
 };
 
 export const getProductById = async (id: number) => {
   const product = await prisma.product.findUnique({
     where: { id },
+    include: {
+      category: true,
+    },
   });
   return product;
 };
 
-export const getCategoryNameByProductCategoryId = async (id: number) => {
-  const category = await prisma.category.findUnique({
-    where: { id },
-    select: { name: true },
+export const createProduct = async (data: {
+  title: string;
+  description?: string;
+  price: number;
+  image?: string;
+  category_id: number;
+  status?: string;
+  stock?: number;
+}) => {
+  return await prisma.product.create({
+    data,
   });
-  return category?.name;
+};
+
+export const updateProduct = async (
+  id: number,
+  data: {
+    title?: string;
+    description?: string;
+    price?: number;
+    image?: string;
+    category_id?: number;
+    status?: string;
+    stock?: number;
+  }
+) => {
+  return await prisma.product.update({
+    where: { id },
+    data,
+  });
+};
+
+export const deleteProduct = async (id: number) => {
+  return await prisma.product.delete({
+    where: { id },
+  });
 };

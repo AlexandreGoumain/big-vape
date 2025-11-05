@@ -8,8 +8,10 @@ import {
 } from "@/components/ui/card";
 import { EuroIcon, PackageOpen, ShoppingBag, User2 } from "lucide-react";
 import { ChartCommande } from "./charts/ChartCommande";
+import { getDashboardStats } from "@/app/services/dashboardService";
 
-export default function DashboardContent() {
+export default async function DashboardContent() {
+  const stats = await getDashboardStats();
   return (
     <>
       <div className="grid gap-5 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
@@ -20,9 +22,9 @@ export default function DashboardContent() {
           </CardHeader>
           <CardContent>
             <p className="flex flex-row items-center gap-2 text-2xl font-bold">
-              1000,00
+              {(stats.totalRevenue / 100).toFixed(2)} €
             </p>
-            <p>sur 20 commandes</p>
+            <p>sur {stats.ordersCount} commandes</p>
           </CardContent>
         </Card>
         <Card>
@@ -32,9 +34,9 @@ export default function DashboardContent() {
           </CardHeader>
           <CardContent>
             <p className="flex flex-row items-center gap-2 text-2xl font-bold">
-              20
+              {stats.ordersCount}
             </p>
-            <p>total de 20 commandes</p>
+            <p>total de {stats.ordersCount} commandes</p>
           </CardContent>
         </Card>
         <Card>
@@ -44,9 +46,9 @@ export default function DashboardContent() {
           </CardHeader>
           <CardContent>
             <p className="flex flex-row items-center gap-2 text-2xl font-bold">
-              5
+              {stats.productsCount}
             </p>
-            <p>total de 5 produits</p>
+            <p>total de {stats.productsCount} produits</p>
           </CardContent>
         </Card>
         <Card>
@@ -56,7 +58,7 @@ export default function DashboardContent() {
           </CardHeader>
           <CardContent>
             <p className="flex flex-row items-center gap-2 text-2xl font-bold">
-              16
+              {stats.usersCount}
             </p>
             <p>nombre d&apos;utilisateurs</p>
           </CardContent>
@@ -70,7 +72,7 @@ export default function DashboardContent() {
           </CardHeader>
           <CardDescription>Récapitulatif des commandes</CardDescription>
           <CardContent>
-            <ChartCommande />
+            <ChartCommande data={stats.monthlyStats} />
           </CardContent>
         </Card>
 
@@ -79,54 +81,33 @@ export default function DashboardContent() {
             <CardTitle>Récentes ventes</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-6">
-            <div className="flex flex-row items-center gap-4">
-              <Avatar className="hidden sm:flex h-10 w-10 bg-slate-500">
-                <AvatarFallback>AG</AvatarFallback>
-              </Avatar>
-              <div className="grid gap-1">
-                <p className="text-sm font-medium">Alexandre Goumain</p>
-                <p className="text-xs text-slate-500">
-                  alexandre26goumain@gmail.com
-                </p>
-              </div>
-              <p className="ml-auto text-sm font-medium">+ 148,00€</p>
-            </div>
-            <div className="flex flex-row items-center gap-4">
-              <Avatar className="hidden sm:flex h-10 w-10 bg-slate-500">
-                <AvatarFallback>AG</AvatarFallback>
-              </Avatar>
-              <div className="grid gap-1">
-                <p className="text-sm font-medium">Alexandre Goumain</p>
-                <p className="text-xs text-slate-500">
-                  alexandre26goumain@gmail.com
-                </p>
-              </div>
-              <p className="ml-auto text-sm font-medium">+ 200,00€</p>
-            </div>
-            <div className="flex flex-row items-center gap-4">
-              <Avatar className="hidden sm:flex h-10 w-10 bg-slate-500">
-                <AvatarFallback>AG</AvatarFallback>
-              </Avatar>
-              <div className="grid gap-1">
-                <p className="text-sm font-medium">Alexandre Goumain</p>
-                <p className="text-xs text-slate-500">
-                  alexandre26goumain@gmail.com
-                </p>
-              </div>
-              <p className="ml-auto text-sm font-medium">+ 499,00€</p>
-            </div>
-            <div className="flex flex-row items-center gap-4">
-              <Avatar className="hidden sm:flex h-10 w-10 bg-slate-500">
-                <AvatarFallback>AG</AvatarFallback>
-              </Avatar>
-              <div className="grid gap-1">
-                <p className="text-sm font-medium">Alexandre Goumain</p>
-                <p className="text-xs text-slate-500">
-                  alexandre26goumain@gmail.com
-                </p>
-              </div>
-              <p className="ml-auto text-sm font-medium">+ 375,00€</p>
-            </div>
+            {stats.recentSales.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Aucune vente récente
+              </p>
+            ) : (
+              stats.recentSales.map((sale, index) => {
+                const initials = sale.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase();
+                return (
+                  <div key={index} className="flex flex-row items-center gap-4">
+                    <Avatar className="hidden sm:flex h-10 w-10 bg-slate-500">
+                      <AvatarFallback>{initials}</AvatarFallback>
+                    </Avatar>
+                    <div className="grid gap-1">
+                      <p className="text-sm font-medium">{sale.name}</p>
+                      <p className="text-xs text-slate-500">{sale.email}</p>
+                    </div>
+                    <p className="ml-auto text-sm font-medium">
+                      + {(sale.amount / 100).toFixed(2)} €
+                    </p>
+                  </div>
+                );
+              })
+            )}
           </CardContent>
         </Card>
       </div>

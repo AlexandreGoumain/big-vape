@@ -17,14 +17,16 @@ model User {
   id        Int      @id @default(autoincrement())
   firstName String
   lastName  String
-  email     String
+  email     String   @unique
   password  String
   birthDate DateTime
-  role      String
+  role      String   @default("user")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  addressId Int
-  address   Address  @relation(fields: [addressId], references: [id])
+  addressId Int?
+  address   Address?  @relation(fields: [addressId], references: [id])
+  orders    Order[]
+  cart      Cart?
 }
 
 model Address {
@@ -37,24 +39,79 @@ model Address {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   users     User[]
+  orders    Order[]
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   title       String
+  description String?     @db.Text
   price       Int
-  image       String?   @default("url_default")
+  image       String?     @default("url_default")
+  status      String      @default("draft") // draft, published, archived
+  stock       Int         @default(0)
   category_id Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  category    Category @relation(fields: [category_id], references: [id]) // Relation to Category model
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  category    Category    @relation(fields: [category_id], references: [id])
+  orderItems  OrderItem[]
+  cartItems   CartItem[]
   newField    String?
 }
 
 model Category {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
+  image     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Order {
+  id                 Int         @id @default(autoincrement())
+  userId             Int
+  status             String      @default("pending") // pending, processing, shipped, delivered, cancelled
+  total              Int
+  shippingAddressId  Int
+  paymentMethod      String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  user               User        @relation(fields: [userId], references: [id])
+  shippingAddress    Address     @relation(fields: [shippingAddressId], references: [id])
+  orderItems         OrderItem[]
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Int      // Prix au moment de l'achat
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  products  Product[]
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cartItems CartItem[]
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  productId Int
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId]) // Un produit ne peut être qu'une fois dans un panier
 }

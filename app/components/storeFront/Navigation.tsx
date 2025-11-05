@@ -17,9 +17,10 @@ import {
     LogoutLink,
     RegisterLink,
 } from "@kinde-oss/kinde-auth-nextjs/components";
-import { CircleUser, MenuIcon } from "lucide-react";
+import { CircleUser, MenuIcon, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCart } from "@/app/context/CartContext";
 
 const links = [
     {
@@ -47,22 +48,44 @@ const links = [
 export default function Navigation() {
     const pathname = usePathname();
     const { isAuthenticated } = useKindeBrowserClient();
+    const { totalItems } = useCart();
 
     return (
         <>
-            <nav className="hidden md:flex gap-4">
+            <nav className="hidden md:flex gap-4 items-center">
                 {links.map((link) => (
-                    <Link
-                        key={link.href}
-                        href={link.href}
-                        className={cn(
-                            pathname === link.href
-                                ? "text-black"
-                                : "text-muted-foreground hover:text-foreground"
-                        )}
-                    >
-                        {link.name}
-                    </Link>
+                    link.href === "/cart" ? (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className={cn(
+                                "flex items-center gap-1",
+                                pathname === link.href
+                                    ? "text-black"
+                                    : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            <ShoppingCart className="w-4 h-4" />
+                            {link.name}
+                            {totalItems > 0 && (
+                                <span className="ml-1 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
+                                    {totalItems}
+                                </span>
+                            )}
+                        </Link>
+                    ) : (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className={cn(
+                                pathname === link.href
+                                    ? "text-black"
+                                    : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            {link.name}
+                        </Link>
+                    )
                 ))}
             </nav>
 

@@ -1,3 +1,5 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,8 +10,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useCart } from "@/app/context/CartContext";
+import { ShoppingCart, Check } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 interface CardProductProps {
   id: number;
@@ -26,6 +31,21 @@ export default function CardProduct({
   price,
   image,
 }: CardProductProps) {
+  const { addItem } = useCart();
+  const [addedToCart, setAddedToCart] = useState(false);
+
+  const handleAddToCart = () => {
+    addItem({
+      productId: id,
+      title,
+      price,
+      image,
+    });
+
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
+  };
+
   return (
     <div className="flex justify-center">
       <Card className="max-w-80">
@@ -38,14 +58,28 @@ export default function CardProduct({
             <Badge>{category}</Badge>
           </CardDescription>
           <br />
-          <CardDescription>{price} €</CardDescription>
+          <CardDescription>{(price / 100).toFixed(2)} €</CardDescription>
         </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button asChild variant="outline" className="w-full">
-            <Link href={`/products/details/${id}`}>Aperçu</Link>
+        <CardFooter className="flex gap-2">
+          <Button asChild variant="outline" className="flex-1">
+            <Link href={`/products/${id}`}>Aperçu</Link>
           </Button>
-          <Button asChild className="w-auto">
-            <Link href={`/cart/${id}`}>Ajouter au panier</Link>
+          <Button
+            onClick={handleAddToCart}
+            disabled={addedToCart}
+            className="flex-1"
+          >
+            {addedToCart ? (
+              <>
+                <Check className="mr-1 h-4 w-4" />
+                Ajouté
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="mr-1 h-4 w-4" />
+                Panier
+              </>
+            )}
           </Button>
         </CardFooter>
       </Card>
