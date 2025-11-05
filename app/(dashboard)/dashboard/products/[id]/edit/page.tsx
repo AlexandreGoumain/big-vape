@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload } from "@/app/components/upload/ImageUpload";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
@@ -213,15 +214,13 @@ export default function EditProduct() {
                 </Select>
               </div>
               <div className="flex flex-col gap-2">
-                <Label>URL de l&apos;image</Label>
-                <Input
-                  type="text"
-                  className="w-full"
-                  placeholder="https://..."
+                <Label>Image du produit</Label>
+                <ImageUpload
                   value={formData.image}
-                  onChange={(e) =>
-                    setFormData({ ...formData, image: e.target.value })
+                  onChange={(url) =>
+                    setFormData({ ...formData, image: url })
                   }
+                  disabled={loading}
                 />
               </div>
               <div className="flex flex-row justify-end gap-2">
