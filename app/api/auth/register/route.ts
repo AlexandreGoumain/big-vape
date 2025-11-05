@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { sendWelcomeEmail } from "@/lib/email";
+import { awardSignupBonus } from "@/app/services/loyaltyService";
 
 const registerSchema = z.object({
   email: z.string().email("Email invalide"),
@@ -58,6 +59,12 @@ export async function POST(request: NextRequest) {
       email: user.email,
     }).catch((error) => {
       console.error("Failed to send welcome email:", error);
+    });
+
+    // Attribuer le bonus de fidélité à l'inscription (ne pas bloquer si ça échoue)
+    awardSignupBonus(user.id).catch((error) => {
+      console.error("Failed to award signup bonus:", error);
+      // Silently fail if loyalty tables don't exist yet
     });
 
     return NextResponse.json(
