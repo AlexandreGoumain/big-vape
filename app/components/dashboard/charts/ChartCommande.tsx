@@ -9,37 +9,24 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-const chartData = [
-  { month: "Jan", ventes: 80 },
-  { month: "Fev", ventes: 305 },
-  { month: "Mar", ventes: 237 },
-  { month: "Avr", ventes: 79 },
-  { month: "Mai", ventes: 250 },
-  { month: "Jun", ventes: 125 },
-  { month: "Jul", ventes: 340 },
-  { month: "Aou", ventes: 190 },
-  { month: "Sep", ventes: 88 },
-  { month: "Oct", ventes: 120 },
-  { month: "Nov", ventes: 150 },
-  { month: "Dec", ventes: 180 },
-];
-
 const chartConfig = {
   ventes: {
-    label: "Ventes",
-    color: "#2563eb",
-  },
-  devise: {
-    label: "Devise",
-    color: "#2563eb",
-  },
-  valeur: {
-    label: "Valeur",
+    label: "Ventes (€)",
     color: "#2563eb",
   },
 } satisfies ChartConfig;
 
-export function ChartCommande() {
+interface ChartCommandeProps {
+  data: Array<{ month: string; ventes: number }>;
+}
+
+export function ChartCommande({ data }: ChartCommandeProps) {
+  // Convertir les centimes en euros pour l'affichage
+  const chartData = data.map((item) => ({
+    month: item.month,
+    ventes: item.ventes / 100,
+  }));
+
   return (
     <ChartContainer config={chartConfig} className="min-h-[200px] w-full ">
       <BarChart accessibilityLayer data={chartData}>

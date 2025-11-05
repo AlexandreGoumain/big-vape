@@ -20,12 +20,16 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 
-export default function CreateProduct() {
+export default function EditProduct() {
   const router = useRouter();
+  const params = useParams();
+  const productId = params.id as string;
+
   const [loading, setLoading] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
   const [categories, setCategories] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -38,20 +42,38 @@ export default function CreateProduct() {
   });
 
   useEffect(() => {
-    // Charger les catégories
-    fetch("/api/categories")
-      .then((res) => res.json())
-      .then((data) => setCategories(data))
-      .catch((err) => console.error("Error loading categories:", err));
-  }, []);
+    // Charger les catégories et le produit
+    Promise.all([
+      fetch("/api/categories").then((res) => res.json()),
+      fetch(`/api/products/${productId}`).then((res) => res.json()),
+    ])
+      .then(([categoriesData, productData]) => {
+        setCategories(categoriesData);
+        setFormData({
+          title: productData.title || "",
+          description: productData.description || "",
+          price: productData.price?.toString() || "",
+          status: productData.status || "draft",
+          category_id: productData.category_id?.toString() || "",
+          stock: productData.stock?.toString() || "0",
+          image: productData.image || "",
+        });
+        setLoadingData(false);
+      })
+      .catch((err) => {
+        console.error("Error loading data:", err);
+        alert("Erreur lors du chargement du produit");
+        setLoadingData(false);
+      });
+  }, [productId]);
 
   async function formSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await fetch("/api/products", {
-        method: "POST",
+      const response = await fetch(`/api/products/${productId}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -59,17 +81,25 @@ export default function CreateProduct() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create product");
+        throw new Error("Failed to update product");
       }
 
       router.push("/dashboard/products");
       router.refresh();
     } catch (error) {
-      console.error("Error creating product:", error);
-      alert("Erreur lors de la création du produit");
+      console.error("Error updating product:", error);
+      alert("Erreur lors de la mise à jour du produit");
     } finally {
       setLoading(false);
     }
+  }
+
+  if (loadingData) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>Chargement...</p>
+      </div>
+    );
   }
 
   return (
@@ -81,14 +111,14 @@ export default function CreateProduct() {
               <ChevronLeft className="w-4 h-4" />
             </Link>
           </Button>
-          <h1 className="text-xl font-bold tracking-tight">Créer un produit</h1>
+          <h1 className="text-xl font-bold tracking-tight">Modifier le produit</h1>
         </div>
 
         <Card className="max-w-7xl mx-auto mt-8">
           <CardHeader>
             <CardTitle>Détails</CardTitle>
             <CardDescription>
-              Créez un produit avec les informations ci-dessous.
+              Modifiez les informations du produit ci-dessous.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -194,9 +224,16 @@ export default function CreateProduct() {
                   }
                 />
               </div>
-              <div className="flex flex-row justify-end">
+              <div className="flex flex-row justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push("/dashboard/products")}
+                >
+                  Annuler
+                </Button>
                 <Button type="submit" className="w-32" disabled={loading}>
-                  {loading ? "Création..." : "Créer"}
+                  {loading ? "Mise à jour..." : "Mettre à jour"}
                 </Button>
               </div>
             </div>
