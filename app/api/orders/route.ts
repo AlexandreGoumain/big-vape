@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/api/prisma/client";
 import { auth } from "@/auth";
+import {
+  sendOrderConfirmationEmail,
+  sendAdminOrderNotification,
+} from "@/lib/email";
 
 // GET /api/orders - Récupérer toutes les commandes de l'utilisateur
 export async function GET() {
@@ -124,6 +128,50 @@ export async function POST(request: NextRequest) {
         shippingAddress: true,
       },
     });
+
+    // Envoyer les emails de notification
+    try {
+      const customerName = dbUser.firstName
+        ? `${dbUser.firstName}${dbUser.lastName ? " " + dbUser.lastName : ""}`
+        : dbUser.email.split("@")[0];
+
+      const emailData = {
+        orderNumber: order.id,
+        customerName,
+        customerEmail: dbUser.email,
+        orderDate: order.createdAt,
+        orderItems: order.orderItems.map((item) => ({
+          product: {
+            title: item.product.title,
+            image: item.product.image,
+          },
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        total: order.total,
+        shippingAddress: {
+          street: order.shippingAddress.street,
+          city: order.shippingAddress.city,
+          state: order.shippingAddress.state,
+          zipCode: order.shippingAddress.zipCode,
+          country: order.shippingAddress.country,
+        },
+        paymentMethod: order.paymentMethod,
+      };
+
+      // Envoyer l'email de confirmation au client (ne pas bloquer si ça échoue)
+      sendOrderConfirmationEmail(emailData).catch((error) => {
+        console.error("Failed to send order confirmation email:", error);
+      });
+
+      // Envoyer la notification à l'admin (ne pas bloquer si ça échoue)
+      sendAdminOrderNotification(emailData).catch((error) => {
+        console.error("Failed to send admin notification:", error);
+      });
+    } catch (emailError) {
+      // Logger l'erreur mais ne pas faire échouer la commande
+      console.error("Error sending emails:", emailError);
+    }
 
     return NextResponse.json(order, { status: 201 });
   } catch (error) {
