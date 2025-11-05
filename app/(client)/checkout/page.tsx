@@ -20,16 +20,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import { LoginLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import { useSession } from "next-auth/react";
 import { ShoppingBag } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, totalPrice, totalItems, clearCart } = useCart();
-  const { isAuthenticated, isLoading } = useKindeBrowserClient();
+  const { data: session, status } = useSession();
+  const isLoading = status === "loading";
+  const isAuthenticated = status === "authenticated";
   const [loading, setLoading] = useState(false);
 
   const [shippingAddress, setShippingAddress] = useState({
@@ -61,7 +63,7 @@ export default function CheckoutPage() {
           </CardHeader>
           <CardFooter className="justify-center">
             <Button asChild size="lg">
-              <LoginLink>Se connecter</LoginLink>
+              <Link href="/login">Se connecter</Link>
             </Button>
           </CardFooter>
         </Card>
