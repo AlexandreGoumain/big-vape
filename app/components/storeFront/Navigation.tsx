@@ -16,6 +16,7 @@ import { CircleUser, MenuIcon, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/app/context/CartContext";
+import SearchBar from "./SearchBar";
 
 const links = [
     {
@@ -84,6 +85,11 @@ export default function Navigation() {
                     )
                 ))}
             </nav>
+
+            {/* Barre de recherche */}
+            <div className="hidden md:flex ml-auto mr-4">
+                <SearchBar />
+            </div>
 
             <Sheet>
                 <SheetTrigger asChild>

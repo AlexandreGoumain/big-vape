@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Package, ShoppingBag } from "lucide-react";
+import { User, Package, ShoppingBag, Edit } from "lucide-react";
 import Link from "next/link";
 
 export default function AccountPage() {
@@ -71,9 +71,18 @@ export default function AccountPage() {
                 <p className="text-sm text-gray-600">{user?.email}</p>
               </div>
 
-              <Button variant="outline" onClick={() => signOut()} className="w-full">
-                Se déconnecter
-              </Button>
+              <div className="space-y-2">
+                <Button asChild variant="default" className="w-full">
+                  <Link href="/account/edit">
+                    <Edit className="w-4 h-4 mr-2" />
+                    Modifier mon profil
+                  </Link>
+                </Button>
+
+                <Button variant="outline" onClick={() => signOut()} className="w-full">
+                  Se déconnecter
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
